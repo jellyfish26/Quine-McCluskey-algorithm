@@ -49,8 +49,6 @@ void First_combining(int bind, int value, string variable) {
 }
 
 void First_compare_and_combine() {
-    answer_complete = true;
-
     unsigned long int size = logical_number.size();
     for (int comparison = 0; comparison < size; comparison++) {
         for (int object = 0; object < size; object++) {
@@ -61,8 +59,8 @@ void First_compare_and_combine() {
                 int check = logical_number[comparison].number[0] xor logical_number[object].number[0];
                 if (debug) cout << check << endl;
 
-                if (check == combined_number[variable_to_bind] && (!logical_number[comparison].completion && !logical_number[object].completion)) {
-                    First_combining(variable_to_bind, logical_number[comparison].number[0], logical_number[comparison].variable);
+                if (check == combined_number[variable_to_bind]) {
+                    First_combining(variable_to_bind, logical_number[comparison].number[0],  logical_number[comparison].variable);
                     logical_number[comparison].completion = true;
                     logical_number[object].completion = true;
                     break;
@@ -70,7 +68,17 @@ void First_compare_and_combine() {
             }
         }
     }
+
+    //Not combine
+    for (int comparison = 0; comparison < size; comparison++) {
+        if(!logical_number[comparison].completion) {
+            answer.push_back({logical_number[comparison].variable, logical_number[comparison].number, true});
+        }
+    }
+
 }
+
+
 
 int main() {
     cout << "Please enter the number of logical variables." << endl;
@@ -91,8 +99,6 @@ int main() {
             cout << logical_number[i].variable << endl << logical_number[i].number[0] << endl;
         }
     }
-
-
     First_compare_and_combine();
 
     if (debug) {
