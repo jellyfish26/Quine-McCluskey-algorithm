@@ -1,20 +1,21 @@
 #include <iostream>
 #include <vector>
-#include <limits>
+#include <algorithm>
 
 using namespace std;
 bool debug = true;
 
 struct logical_expression {
-    string valiable;
+    string variable;
     vector<int> number;
+    bool completion;
 };
 
 int number_of_variables;
 vector<logical_expression> logical_number;
 vector<logical_expression> answer;
 bool answer_complete = false;
-int Combined_number[26] = {1, 2, 4, 8, 16, 32, 64, 128, 256, 512, 1024, 2048, 4096, 8192, 16384, 32768, 65536, 131072,
+int combined_number[26] = {1, 2, 4, 8, 16, 32, 64, 128, 256, 512, 1024, 2048, 4096, 8192, 16384, 32768, 65536, 131072,
                            262144, 524288, 1048576, 2097152, 4194304, 8388608, 16777216, 33554432}; // A ~ Z
 
 string Constructing_logical_expressions(string input) {
@@ -25,7 +26,7 @@ string Constructing_logical_expressions(string input) {
     for (int i = 0; i < input.size(); i++) {
         if (input[i] == '0' || input[i] == '1') {
             output += input[i];
-            if (input[i] == '1') number_temp += Combined_number[i];
+            if (input[i] == '1') number_temp += combined_number[i];
         } else return "DON'T INPUT (Please enter a binary number.)";
     }
     number.push_back(number_temp);
@@ -34,13 +35,17 @@ string Constructing_logical_expressions(string input) {
         if (logical_number[i].number[0] == number_temp) return "DON'T INPUT (It has already been entered.)";
     }
 
-    logical_number.push_back({output, number});
+    logical_number.push_back({output, number, false});
 
     return "INPUT COMPLETE";
 }
 
-void Combining(int value) {
-
+void First_combining(int bind, int value, string variable) {
+    vector<int> number;
+    variable[bind] = '-';
+    number.push_back(value);
+    number.push_back(value + combined_number[bind]);
+    answer.push_back({variable, number, false});
 }
 
 void First_compare_and_combine() {
@@ -52,11 +57,15 @@ void First_compare_and_combine() {
             if (comparison == object) continue;
 
             for (int variable_to_bind = 0; variable_to_bind < number_of_variables; variable_to_bind++) {
+                if (logical_number[comparison].number[0] > logical_number[object].number[0]) continue;
                 int check = logical_number[comparison].number[0] xor logical_number[object].number[0];
                 if (debug) cout << check << endl;
 
-                if (check == Combined_number[variable_to_bind]) {
-
+                if (check == combined_number[variable_to_bind] && (!logical_number[comparison].completion && !logical_number[object].completion)) {
+                    First_combining(variable_to_bind, logical_number[comparison].number[0], logical_number[comparison].variable);
+                    logical_number[comparison].completion = true;
+                    logical_number[object].completion = true;
+                    break;
                 }
             }
         }
@@ -79,11 +88,18 @@ int main() {
 
     if (debug) {
         for (int i = 0; i < logical_number.size(); i++) {
-            cout << logical_number[i].valiable << endl << logical_number[i].number[0] << endl;
+            cout << logical_number[i].variable << endl << logical_number[i].number[0] << endl;
         }
     }
 
+
     First_compare_and_combine();
 
-    return 0;
+    if (debug) {
+        for (int i = 0; i < answer.size(); ++i) {
+            cout << answer[i].variable << endl << answer[i].number[0] << " " << answer[i].number[1] << endl;
+        }
+    }
+
+    return EXIT_SUCCESS;
 }
