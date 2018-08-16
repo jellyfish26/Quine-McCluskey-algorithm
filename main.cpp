@@ -60,7 +60,8 @@ void First_compare_and_combine() {
                 if (debug) cout << check << endl;
 
                 if (check == combined_number[variable_to_bind]) {
-                    First_combining(variable_to_bind, logical_number[comparison].number[0],  logical_number[comparison].variable);
+                    First_combining(variable_to_bind, logical_number[comparison].number[0],
+                                    logical_number[comparison].variable);
                     logical_number[comparison].completion = true;
                     logical_number[object].completion = true;
                     break;
@@ -71,12 +72,53 @@ void First_compare_and_combine() {
 
     //Not combine
     for (int comparison = 0; comparison < size; comparison++) {
-        if(!logical_number[comparison].completion) {
+        if (!logical_number[comparison].completion) {
             answer.push_back({logical_number[comparison].variable, logical_number[comparison].number, true});
         }
     }
 
 }
+
+void Multiple_combining(int bind, int value, string variable) {
+    vector<int> number;
+    variable[bind] = '-';
+    number.push_back(value);
+    number.push_back(value + combined_number[bind]);
+    answer.push_back({variable, number, false});
+}
+
+void Multiple_compare_and_combine() {
+    int hierarchy = 2; // The first time is over.
+    while (true) {
+        if (answer_complete) break;
+        for (int comparison = 0; comparison < answer.size(); comparison++) {
+            if (answer[comparison].number.size() != hierarchy) continue;
+
+            for (int object = 0; object < answer.size(); ++object) {
+                for (int variable_to_bind = 0; variable_to_bind < number_of_variables; variable_to_bind++) {
+                    if (answer[comparison].number[0] > answer[object].number[0]) continue;
+                    int check = answer[comparison].number[0] xor answer[object].number[0];
+                    if (debug) cout << check << endl;
+                    if (check == combined_number[variable_to_bind]) {
+                        bool combining = true;
+                        for (int high = 1; high < hierarchy; high++) {
+                            if (check != answer[comparison].number[high] xor answer[object].number[high]) combining = false;
+                        }
+
+                        if(combining) {
+                            Multiple_combining(variable_to_bind, logical_number[comparison].number[0],
+                                            logical_number[comparison].variable);
+                            logical_number[comparison].completion = true;
+                            logical_number[object].completion = true;
+                            break;
+                        }
+                    }
+                }
+            }
+        }
+    }
+}
+
 
 
 
@@ -106,6 +148,8 @@ int main() {
             cout << answer[i].variable << endl << answer[i].number[0] << " " << answer[i].number[1] << endl;
         }
     }
+
+    Multiple_compare_and_combine();
 
     return EXIT_SUCCESS;
 }
