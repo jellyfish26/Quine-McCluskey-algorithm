@@ -73,49 +73,69 @@ void First_compare_and_combine() {
     //Not combine
     for (int comparison = 0; comparison < size; comparison++) {
         if (!logical_number[comparison].completion) {
-            answer.push_back({logical_number[comparison].variable, logical_number[comparison].number, true});
+            answer.push_back({logical_number[comparison].variable, logical_number[comparison].number, false});
         }
     }
 
 }
 
-void Multiple_combining(int bind, int value, string variable) {
-    vector<int> number;
+void Multiple_combining(int bind, vector<int> value, string variable) {
     variable[bind] = '-';
-    number.push_back(value);
-    number.push_back(value + combined_number[bind]);
-    answer.push_back({variable, number, false});
+    unsigned long int value_size = value.size();
+    for (int high = 0; high < value_size; ++high) {
+        value.push_back(value[high] + combined_number[bind]);
+    }
+    answer.push_back({variable, value, false});
+}
+
+bool check_overlap(int comparison, int object) {
+    for (int i = 0; i < answer[comparison].number.size(); ++i) {
+        for (int j = 0; j < answer[object].number.size(); ++j) {
+
+            if (answer[comparison].number[i] > answer[object].number[j]) return true;
+        }
+    }
+
+    return false;
 }
 
 void Multiple_compare_and_combine() {
     int hierarchy = 2; // The first time is over.
     while (true) {
         if (answer_complete) break;
+        answer_complete = true; //init
         for (int comparison = 0; comparison < answer.size(); comparison++) {
             if (answer[comparison].number.size() != hierarchy) continue;
 
             for (int object = 0; object < answer.size(); ++object) {
+                if (answer[object].number.size() != hierarchy) continue;
+                answer_complete = false; // There is something to compare
+
+                // if (answer[comparison].number[0] > answer[object].number[0]) continue;
+
+
+                if (check_overlap(comparison, object)) continue;
+
                 for (int variable_to_bind = 0; variable_to_bind < number_of_variables; variable_to_bind++) {
-                    if (answer[comparison].number[0] > answer[object].number[0]) continue;
+                    //if (answer[comparison].number[0] > answer[object].number[0]) continue;
                     int check = answer[comparison].number[0] xor answer[object].number[0];
-                    if (debug) cout << check << endl;
                     if (check == combined_number[variable_to_bind]) {
                         bool combining = true;
                         for (int high = 1; high < hierarchy; high++) {
-                            if (check != answer[comparison].number[high] xor answer[object].number[high]) combining = false;
+                            if (check != (answer[comparison].number[high] xor answer[object].number[high])) combining = false;
                         }
 
                         if(combining) {
-                            Multiple_combining(variable_to_bind, logical_number[comparison].number[0],
-                                            logical_number[comparison].variable);
-                            logical_number[comparison].completion = true;
-                            logical_number[object].completion = true;
+                            Multiple_combining(variable_to_bind, answer[comparison].number, answer[comparison].variable);
+                            answer[comparison].completion = true;
+                            answer[object].completion = true;
                             break;
                         }
                     }
                 }
             }
         }
+        hierarchy *= 2;
     }
 }
 
@@ -143,13 +163,19 @@ int main() {
     }
     First_compare_and_combine();
 
+    Multiple_compare_and_combine();
+
     if (debug) {
         for (int i = 0; i < answer.size(); ++i) {
-            cout << answer[i].variable << endl << answer[i].number[0] << " " << answer[i].number[1] << endl;
+            if(!answer[i].completion) {
+                cout << answer[i].variable << endl;
+                for (int j = 0; j < answer[i].number.size(); ++j) {
+                    cout << answer[i].number[j] << " ";
+                }
+                cout << endl;
+            }
         }
     }
-
-    Multiple_compare_and_combine();
 
     return EXIT_SUCCESS;
 }
