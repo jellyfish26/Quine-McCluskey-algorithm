@@ -286,6 +286,28 @@ void Choice_minimun_item() {
     }
 }
 
+void Output() {
+    for (int i = 0; i < items.size(); ++i) {
+        if(items[i].completion) {
+            for (int j = 0; j < items[i].variable.length(); ++j) {
+                if(items[i].variable[j] == '0') cout << "~" << (char)('A' + j);
+                else if(items[i].variable[j] == '1') cout << (char)('A' + j);
+            }
+            if (i != items.size() - 1) cout << " + ";
+        }
+    }
+
+    for (int i = 0; i < choice_items.size(); ++i) {
+        if(choice_items[i].completion) {
+            cout << " + ";
+            for (int j = 0; j < choice_items[i].variable.length(); ++j) {
+                if(choice_items[i].variable[j] == '0') cout << "~" << (char)('A' + j);
+                else if(choice_items[i].variable[j] == '1') cout << (char)('A' + j);
+            }
+        }
+    }
+}
+
 int main() {
     cout << "Please enter the number of logical variables." << endl;
     cin >> number_of_variables;
@@ -312,6 +334,8 @@ int main() {
     Require_essential_items();
 
     Choice_minimun_item();
+
+    Output();
 
     return EXIT_SUCCESS;
 }
