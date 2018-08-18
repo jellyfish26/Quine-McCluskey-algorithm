@@ -111,11 +111,6 @@ void Multiple_compare_and_combine() {
                 if (answer[object].number.size() != hierarchy) continue;
                 answer_complete = false; // There is something to compare
 
-                // if (answer[comparison].number[0] > answer[object].number[0]) continue;
-
-
-                if (check_overlap(comparison, object)) continue;
-
                 for (int variable_to_bind = 0; variable_to_bind < number_of_variables; variable_to_bind++) {
                     //if (answer[comparison].number[0] > answer[object].number[0]) continue;
                     int check = answer[comparison].number[0] xor answer[object].number[0];
@@ -125,10 +120,11 @@ void Multiple_compare_and_combine() {
                             if (check != (answer[comparison].number[high] xor answer[object].number[high])) combining = false;
                         }
 
-                        if(combining) {
-                            Multiple_combining(variable_to_bind, answer[comparison].number, answer[comparison].variable);
+                        if (combining) {
                             answer[comparison].completion = true;
                             answer[object].completion = true;
+                            if (check_overlap(comparison, object)) continue;
+                            Multiple_combining(variable_to_bind, answer[comparison].number, answer[comparison].variable);
                             break;
                         }
                     }
@@ -139,7 +135,88 @@ void Multiple_compare_and_combine() {
     }
 }
 
+// Ask for an answer
 
+vector<int> value;
+vector<logical_expression> items;
+
+void Extraction() {
+    for (int i = 0; i < answer.size(); ++i) {
+        if (!answer[i].completion) {
+            items.push_back({answer[i].variable, answer[i].number, false});
+        }
+    }
+
+    if (debug) {
+        for (int i = 0; i < items.size(); ++i) {
+            cout << items[i].variable << endl;
+            for (int j = 0; j < items[i].number.size(); ++j) {
+                cout << items[i].number[j] << " ";
+            }
+            cout << endl;
+        }
+    }
+}
+
+bool tables[1000][10000] = {false};
+bool choice[10000] = {false};
+
+void Make_table() {
+    for (int i = 0; i < items.size(); ++i) {
+        for (int j = 0; j < items[i].number.size(); ++j) {
+            for (int k = 0; k < value.size(); ++k) {
+                if (items[i].number[j] == value[k]) tables[i][k] = true;
+            }
+        }
+    }
+}
+
+bool Check_mandatory_items(int item) {
+    bool onlyone;
+    for (int i = 0; i < value.size(); ++i) {
+        onlyone = true;
+        if (!tables[item][i]) continue;
+        for (int j = 0; j < items.size(); ++j) {
+            if (item == j) continue;
+            if (tables[j][i]) onlyone = false;
+        }
+
+        if (onlyone) return true;
+    }
+
+    return false;
+}
+
+void Require_essential_items() {
+    for (int i = 0; i < answer.size(); ++i) {
+        for (int j = 0; j < answer[i].number.size(); ++j) {
+            value.push_back(answer[i].number[j]);
+        }
+    }
+
+    sort(value.begin(), value.end());
+    value.erase(unique(value.begin(), value.end()), value.end());
+    Extraction();
+    Make_table();
+
+    for (int i = 0; i < items.size(); ++i) {
+        items[i].completion = Check_mandatory_items(i);
+        if (debug) cout << i << " " << items[i].completion << endl;
+    }
+
+    if (debug) {
+        for (int i = 0; i < items.size(); ++i) {
+            for (int j = 0; j < value.size(); ++j) {
+                cout << tables[i][j] << " ";
+            }
+            cout << endl;
+        }
+
+        for (int i = 0; i < value.size(); ++i) {
+            cout << value[i] << " ";
+        }
+    }
+}
 
 
 int main() {
@@ -165,17 +242,7 @@ int main() {
 
     Multiple_compare_and_combine();
 
-    if (debug) {
-        for (int i = 0; i < answer.size(); ++i) {
-            if(!answer[i].completion) {
-                cout << answer[i].variable << endl;
-                for (int j = 0; j < answer[i].number.size(); ++j) {
-                    cout << answer[i].number[j] << " ";
-                }
-                cout << endl;
-            }
-        }
-    }
+    Require_essential_items();
 
     return EXIT_SUCCESS;
 }
