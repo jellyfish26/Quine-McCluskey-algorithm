@@ -3,7 +3,7 @@
 #include <algorithm>
 
 using namespace std;
-bool debug = true;
+bool debug = false;
 
 struct logical_expression {
     string variable;
