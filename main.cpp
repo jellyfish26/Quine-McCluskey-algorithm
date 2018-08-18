@@ -204,6 +204,16 @@ void Require_essential_items() {
         if (debug) cout << i << " " << items[i].completion << endl;
     }
 
+    for (int i = 0; i < items.size(); ++i) {
+        if (items[i].completion) {
+            for (int j = 0; j < items[i].number.size(); ++j) {
+                for (int k = 0; k < value.size(); ++k) {
+                    if (value[k] == items[i].number[j]) choice[k] = true;
+                }
+            }
+        }
+    }
+
     if (debug) {
         for (int i = 0; i < items.size(); ++i) {
             for (int j = 0; j < value.size(); ++j) {
@@ -215,9 +225,66 @@ void Require_essential_items() {
         for (int i = 0; i < value.size(); ++i) {
             cout << value[i] << " ";
         }
+        cout << endl;
+
+        for (int i = 0; i < value.size(); ++i) {
+            cout << choice[i] << " ";
+        }
+        cout << endl;
     }
 }
 
+vector<logical_expression> choice_items;
+
+bool Synthesize(int first, int second) {
+    bool check_syn;
+    for (int i = 0; i < choice_items[first].number.size(); ++i) {
+        check_syn = true;
+        for (int j = 0; j < choice_items[second].number.size(); ++j) {
+            if (choice_items[first].number[i] == choice_items[second].number[j]) {
+                check_syn = false;
+                break;
+            }
+        }
+        if (check_syn) return true;
+    }
+
+    return false;
+}
+
+
+void Choice_minimun_item() {
+    for (int i = 0; i < items.size(); ++i) {
+        if (items[i].completion) continue;
+        vector<int> number;
+
+        for (int j = 0; j < value.size(); ++j) {
+            if(tables[i][j] && !choice[j])  number.push_back(value[j]);
+        }
+
+        choice_items.push_back({items[i].variable, number, true});
+    }
+
+    for (int i = 0; i < choice_items.size(); ++i) {
+        for (int j = 0; j < choice_items.size(); ++j) {
+            if(i == j) continue;
+            if(!choice_items[i].completion) continue;
+            choice_items[i].completion = Synthesize(i, j);
+        }
+    }
+    
+    if(debug) {
+        for (int i = 0; i < choice_items.size(); ++i) {
+            if (choice_items[i].completion) {
+                cout << choice_items[i].variable << endl;
+                for (int j = 0; j < choice_items[i].number.size(); ++j) {
+                    cout << choice_items[i].number[j] << " ";
+                }
+                cout << endl;
+            }
+        }
+    }
+}
 
 int main() {
     cout << "Please enter the number of logical variables." << endl;
@@ -243,6 +310,8 @@ int main() {
     Multiple_compare_and_combine();
 
     Require_essential_items();
+
+    Choice_minimun_item();
 
     return EXIT_SUCCESS;
 }
