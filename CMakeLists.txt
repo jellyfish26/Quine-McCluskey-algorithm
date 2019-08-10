@@ -3,4 +3,4 @@ project(Quine-McCluskey-algorithm)
 
 set(CMAKE_CXX_STANDARD 11)
 
-add_executable(Quine-McCluskey-algorithm main.cpp)
+add_executable(Quine-McCluskey-algorithm src/main.cpp src/LogicalUnit.cpp)
